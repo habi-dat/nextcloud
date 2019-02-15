@@ -1,0 +1,16 @@
+FROM nextcloud:15
+
+RUN \
+  apt-get update \
+  && apt-get -y install gettext-base \
+  && apt-get clean \
+&& rm -rf /var/lib/apt/lists/*
+
+ADD fixes /fixes
+
+ADD images /images
+ADD icons /icons
+ADD bootstrap.sh /habidat-bootstrap.sh
+ADD afterupdate.sh /habidat-afterupdate.sh
+
+RUN chmod +x /habidat-bootstrap.sh && chmod +x /habidat-afterupdate.sh
