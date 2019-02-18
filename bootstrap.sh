@@ -95,6 +95,9 @@ php occ config:app:set discoursesso clienturl --value="$HABIDAT_PROTOCOL://$HABI
 echo "[HABIDAT] Setting up LDAP..."
 php occ app:enable user_ldap
 php occ ldap:create-empty-config
+php occ ldap:set-config s01 ldapHost "$HABIDAT_DOCKER_PREFIX-ldap"
+php occ ldap:set-config s01 ldapPort 389
+php occ ldap:set-config s01 ldapLoginFilter "(&(objectclass=inetOrgPerson)(|(uid=%uid)(|(cn=%uid)(mail=%uid))))"
 php occ ldap:set-config s01 hasMemberOfFilterSupport 1
 php occ ldap:set-config s01 lastJpegPhotoLookup 0
 php occ ldap:set-config s01 ldapAgentName "cn=admin,$HABIDAT_LDAP_BASE"
@@ -114,15 +117,12 @@ php occ ldap:set-config s01 ldapGroupFilter "(&(|(objectclass=groupOfNames)))"
 php occ ldap:set-config s01 ldapGroupFilterMode 0
 php occ ldap:set-config s01 ldapGroupFilterObjectclass "groupOfNames"
 php occ ldap:set-config s01 ldapGroupMemberAssocAttr member
-php occ ldap:set-config s01 ldapHost "$HABIDAT_DOCKER_PREFIX-ldap"
-php occ ldap:set-config s01 ldapLoginFilter "(&(objectclass=inetOrgPerson)(|(uid=%uid)(|(cn=%uid)(mail=%uid))))"
 php occ ldap:set-config s01 ldapLoginFilterAttributes cn
 php occ ldap:set-config s01 ldapLoginFilterEmail 1
 php occ ldap:set-config s01 ldapLoginFilterMode 0
 php occ ldap:set-config s01 ldapLoginFilterUsername 1
 php occ ldap:set-config s01 ldapNestedGroups 0
 php occ ldap:set-config s01 ldapPagingSize 1000
-php occ ldap:set-config s01 ldapPort 389
 php occ ldap:set-config s01 ldapQuotaDefault 10GB
 php occ ldap:set-config s01 ldapTLS 0
 php occ ldap:set-config s01 ldapUserDisplayName cn
