@@ -1,8 +1,8 @@
 #!/bin/bash
-set -x
+set +x
 
 envsubst < /fixes/.htaccess > /var/www/html/.htaccess
-envsubst < /fixes/LoginController.php > /var/www/html/core/Controller/LoginController.php
+cp /fixes/LoginController.php /var/www/html/core/Controller/LoginController.php
 
 echo "[HABIDAT] Installing Nextcloud..."
 php occ maintenance:install --database "mysql" --database-host "$HABIDAT_DOCKER_PREFIX-nextcloud-db" --database-name "nextcloud"  --database-user "nextcloud" --database-pass "$MYSQL_PASSWORD" --admin-user "$NEXTCLOUD_ADMIN_USER" --admin-pass "$NEXTCLOUD_ADMIN_PASSWORD"
@@ -55,12 +55,14 @@ fi
 
 EXTERNAL_SITES+='}'
 php occ config:app:set external sites --value "$EXTERNAL_SITES"
+mkdir -p "$APPDATA_DIR/external/icons/"
+cp /icons/* "$APPDATA_DIR/external/icons/"
 
 #theming
 echo "[HABIDAT] Theming..."
 mkdir -p "$APPDATA_DIR/theming/images"
-cp images/logo "$APPDATA_DIR/theming/images"
-cp images/background "$APPDATA_DIR/theming/images"
+cp /images/logo "$APPDATA_DIR/theming/images"
+cp /images/background "$APPDATA_DIR/theming/images"
 php occ config:app:set theming color --value="#A40023"
 php occ config:app:set theming name --value="$HABIDAT_TITLE"
 php occ config:app:set theming url --value="$HABIDAT_PROTOCOL://$HABIDAT_DOMAIN"
@@ -113,7 +115,7 @@ php occ ldap:set-config s01 ldapGroupFilterMode 0
 php occ ldap:set-config s01 ldapGroupFilterObjectclass "groupOfNames"
 php occ ldap:set-config s01 ldapGroupMemberAssocAttr member
 php occ ldap:set-config s01 ldapHost "$HABIDAT_DOCKER_PREFIX-ldap"
-php occ ldap:set-config s01 ldapLoginFilter "(&(|(objectclass=inetOrgPerson))(|(uid=%uid)(|(cn=%uid)(mail=%uid))))"
+php occ ldap:set-config s01 ldapLoginFilter "(&(objectclass=inetOrgPerson)(|(uid=%uid)(|(cn=%uid)(mail=%uid))))"
 php occ ldap:set-config s01 ldapLoginFilterAttributes cn
 php occ ldap:set-config s01 ldapLoginFilterEmail 1
 php occ ldap:set-config s01 ldapLoginFilterMode 0
@@ -124,7 +126,7 @@ php occ ldap:set-config s01 ldapPort 389
 php occ ldap:set-config s01 ldapQuotaDefault 10GB
 php occ ldap:set-config s01 ldapTLS 0
 php occ ldap:set-config s01 ldapUserDisplayName cn
-php occ ldap:set-config s01 ldapUserFilter "(&((objectclass=inetOrgPerson)))"
+php occ ldap:set-config s01 ldapUserFilter "(objectclass=inetOrgPerson)"
 php occ ldap:set-config s01 ldapUserFilterMode 0
 php occ ldap:set-config s01 ldapUserFilterObjectclass inetOrgPerson
 php occ ldap:set-config s01 ldapUuidGroupAttribute auto

@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set +x
 
 envsubst < /fixes/.htaccess > /var/www/html/.htaccess
-envsubst < /fixes/LoginController.php > /var/www/html/core/Controller/LoginController.php
+cp /fixes/LoginController.php /var/www/html/core/Controller/LoginController.php
