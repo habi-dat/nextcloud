@@ -10,7 +10,8 @@ ADD fixes /fixes
 
 ADD images /images
 ADD icons /icons
-ADD bootstrap.sh /habidat-bootstrap.sh
-ADD afterupdate.sh /habidat-afterupdate.sh
+ADD habidat-bootstrap.sh /habidat-bootstrap.sh
+ADD habidat-afterupdate.sh /habidat-afterupdate.sh
+ADD habidat-update-externalsites.sh /habidat-update-externalsites.sh
 
-RUN chmod +x /habidat-bootstrap.sh && chmod +x /habidat-afterupdate.sh
+RUN chmod +x /habidat-bootstrap.sh && chmod +x /habidat-afterupdate.sh /habidat-update-externalsites.sh
