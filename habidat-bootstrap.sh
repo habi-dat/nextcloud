@@ -108,3 +108,8 @@ php occ ldap:set-config s01 turnOffCertCheck 0
 php occ ldap:set-config s01 turnOnPasswordChange 0
 php occ ldap:set-config s01 useMemberOfToDetectMembership 0        
 
+# version specific for 15.0.4
+php occ maintenance:mode --on
+php occ db:convert-filecache-bigint
+php occ maintenance:mode --off
+
