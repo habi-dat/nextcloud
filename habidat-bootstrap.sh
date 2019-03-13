@@ -3,11 +3,12 @@ set +x
 
 envsubst < /fixes/.htaccess > /var/www/html/.htaccess
 cp /fixes/LoginController.php /var/www/html/core/Controller/LoginController.php
-sed -i "/);/i \
-'overwriteprotocol' => 'https'," /var/www/html/config/config.php
 
 echo "[HABIDAT] Installing Nextcloud..."
 php occ maintenance:install --database "mysql" --database-host "$HABIDAT_DOCKER_PREFIX-nextcloud-db" --database-name "nextcloud"  --database-user "nextcloud" --database-pass "$HABIDAT_MYSQL_PASSWORD" --admin-user "$HABIDAT_ADMIN_USER" --admin-pass "$HABIDAT_ADMIN_PASSWORD"
+
+sed -i "/);/i \
+'overwriteprotocol' => 'https'," /var/www/html/config/config.php
 
 #install and configure nextcloud
 echo "[HABIDAT] Configuring Nextcloud..."
@@ -28,7 +29,7 @@ php occ app:enable external
 
 APPDATA_DIR=$(find /var/www/html/data/ -type d -regex "/var/www/html/data/appdata[^/]*" | tr -d "\r" | head -n1)
 
-./habidat-udpate-externalsites.sh
+./habidat-update-externalsites.sh
 
 mkdir -p "$APPDATA_DIR/external/icons/"
 cp /icons/* "$APPDATA_DIR/external/icons/"
@@ -112,6 +113,6 @@ php occ ldap:set-config s01 useMemberOfToDetectMembership 0
 
 # version specific for 15.0.4
 php occ maintenance:mode --on
-php occ db:convert-filecache-bigint
+php occ db:convert-filecache-bigint --no-interaction
 php occ maintenance:mode --off
 
