@@ -3,6 +3,8 @@ set +x
 
 envsubst < /fixes/.htaccess > /var/www/html/.htaccess
 cp /fixes/LoginController.php /var/www/html/core/Controller/LoginController.php
+sed -i "/);/i \
+'overwriteprotocol' => 'https'," /var/lib/docker/volumes/habidat-nextcloud_data/_data/config/config.php 
 
 echo "[HABIDAT] Installing Nextcloud..."
 php occ maintenance:install --database "mysql" --database-host "$HABIDAT_DOCKER_PREFIX-nextcloud-db" --database-name "nextcloud"  --database-user "nextcloud" --database-pass "$MYSQL_PASSWORD" --admin-user "$NEXTCLOUD_ADMIN_USER" --admin-pass "$NEXTCLOUD_ADMIN_PASSWORD"
