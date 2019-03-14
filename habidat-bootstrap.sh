@@ -111,6 +111,28 @@ php occ ldap:set-config s01 turnOffCertCheck 0
 php occ ldap:set-config s01 turnOnPasswordChange 0
 php occ ldap:set-config s01 useMemberOfToDetectMembership 0        
 
+if [ ! -z "HABIDAT_SSO_CERTIFICATE" ]
+then
+
+	php occ app:install user_saml
+	php occ app:enable user_saml
+	php occ config:app:set user_saml general-allow_multiple_user_back_ends --value=0
+	php occ config:app:set user_saml general-idp0_display_name --value="$HABIDAT_TITLE"
+	php occ config:app:set user_saml general-require_provisioned_account --value=1
+	php occ config:app:set user_saml general-uid_mapping --value=uid
+	php occ config:app:set user_saml idp-entityId --value="https://sso.$HABIDAT_DOMAIN"
+	php occ config:app:set user_saml idp-singleLogoutService.url --value="https://sso.$HABIDAT_DOMAIN/simplesaml/saml2/idp/SingleLogoutService.php"
+	php occ config:app:set user_saml idp-singleSignOnService.url --value="https://sso.$HABIDAT_DOMAIN/simplesaml/saml2/idp/SSOService.php"
+	php occ config:app:set user_saml idp-x509cert --value="$(echo $HABIDAT_SSO_CERTIFICATE | sed --expression='s/\\n/\n/g')"
+	php occ config:app:set user_saml saml-attribute-mapping-displayName_mapping --value=cn
+	php occ config:app:set user_saml saml-attribute-mapping-email_mapping --value=mail
+	php occ config:app:set user_saml saml-attribute-mapping-group_mapping --value=memberOf
+	php occ config:app:set user_saml saml-attribute-mapping-quota_mapping --value=description
+	php occ config:app:set user_saml type --value=saml
+	php occ config:app:set user_saml types --value=authentication
+
+fi	
+
 # version specific for 15.0.4
 php occ maintenance:mode --on
 php occ db:convert-filecache-bigint --no-interaction
