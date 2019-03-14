@@ -14,4 +14,4 @@ ADD habidat-bootstrap.sh /habidat-bootstrap.sh
 ADD habidat-afterupdate.sh /habidat-afterupdate.sh
 ADD habidat-update-externalsites.sh /habidat-update-externalsites.sh
 
-RUN chmod +x /habidat-bootstrap.sh && chmod +x /habidat-afterupdate.sh /habidat-update-externalsites.sh
+RUN chmod +x /habidat-bootstrap.sh && chmod +x /habidat-afterupdate.sh && chmod +x /habidat-update-externalsites.sh

@@ -29,7 +29,7 @@ php occ app:enable external
 
 APPDATA_DIR=$(find /var/www/html/data/ -type d -regex "/var/www/html/data/appdata[^/]*" | tr -d "\r" | head -n1)
 
-./habidat-update-externalsites.sh
+/habidat-update-externalsites.sh
 
 mkdir -p "$APPDATA_DIR/external/icons/"
 cp /icons/* "$APPDATA_DIR/external/icons/"
