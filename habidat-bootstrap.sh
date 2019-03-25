@@ -111,7 +111,7 @@ php occ ldap:set-config s01 turnOffCertCheck 0
 php occ ldap:set-config s01 turnOnPasswordChange 0
 php occ ldap:set-config s01 useMemberOfToDetectMembership 0        
 
-if [ ! -z "HABIDAT_SSO_CERTIFICATE" ]
+if [ $HABIDAT_SSO == "true" ]
 then
 
 	php occ app:install user_saml
