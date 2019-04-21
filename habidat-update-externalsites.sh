@@ -51,5 +51,16 @@ then
 	EXTERNAL_SITES+=$(printf "$EXTERNAL_SITES_TEMPLATE" "$COUNT" "direktkredite.png" "$COUNT" "Direktkredite" "$HABIDAT_PROTOCOL://$HABIDAT_DIREKTKREDIT_SUBDOMAIN.$HABIDAT_DOMAIN")
 fi
 
+if [ ! -z "$HABIDAT_MAILTRAIN_SUBDOMAIN" ]
+then
+	if [ "$COUNT" -ne 0 ]
+	then
+		EXTERNAL_SITES+=","
+	fi
+
+	((COUNT+=1))
+	EXTERNAL_SITES+=$(printf "$EXTERNAL_SITES_TEMPLATE" "$COUNT" "newsletter.png" "$COUNT" "Newsletter" "$HABIDAT_PROTOCOL://$HABIDAT_MAILTRAIN_SUBDOMAIN.$HABIDAT_DOMAIN")
+fi
+
 EXTERNAL_SITES+='}'
 php occ config:app:set external sites --value "$EXTERNAL_SITES"
