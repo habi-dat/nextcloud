@@ -5,27 +5,27 @@ envsubst < /fixes/.htaccess > /var/www/html/.htaccess
 cp /fixes/LoginController.php /var/www/html/core/Controller/LoginController.php
 
 echo "[HABIDAT] Installing Nextcloud..."
-php occ maintenance:install --database "mysql" --database-host "$HABIDAT_DOCKER_PREFIX-nextcloud-db" --database-name "nextcloud"  --database-user "nextcloud" --database-pass "$HABIDAT_MYSQL_PASSWORD" --admin-user "$HABIDAT_ADMIN_USER" --admin-pass "$HABIDAT_ADMIN_PASSWORD"
+php occ maintenance:install -n --database "mysql" --database-host "$HABIDAT_DOCKER_PREFIX-nextcloud-db" --database-name "nextcloud"  --database-user "nextcloud" --database-pass "$HABIDAT_MYSQL_PASSWORD" --admin-user "$HABIDAT_ADMIN_USER" --admin-pass "$HABIDAT_ADMIN_PASSWORD"
 
 sed -i "/);/i \
 'overwriteprotocol' => 'https'," /var/www/html/config/config.php
 
 #install and configure nextcloud
 echo "[HABIDAT] Configuring Nextcloud..."
-php occ config:system:set trusted_domains 2 --value="$HABIDAT_NEXTCLOUD_SUBDOMAIN.$HABIDAT_DOMAIN"
-php occ config:system:set default_language --value=de
-php occ config:system:set force_language --value=de
-php occ config:system:set lost_password_link --value="$HABIDAT_PROTOCOL://$HABIDAT_USER_SUBDOMAIN.$HABIDAT_DOMAIN/lostpasswd"
+php occ config:system:set -n trusted_domains 2 --value="$HABIDAT_NEXTCLOUD_SUBDOMAIN.$HABIDAT_DOMAIN"
+php occ config:system:set -n default_language --value=de
+php occ config:system:set -n force_language --value=de
+php occ config:system:set -n lost_password_link --value="$HABIDAT_PROTOCOL://$HABIDAT_USER_SUBDOMAIN.$HABIDAT_DOMAIN/lostpasswd"
 
 #install calendar
 echo "[HABIDAT] Installing Calendar..."
-php occ app:install calendar
-php occ app:enable calendar
+php occ app:install -n calendar
+php occ app:enable -n calendar
 
 #add discourse icon and external site
 echo "[HABIDAT] Installing External Sites..."
-php occ app:install external
-php occ app:enable external
+php occ app:install -n external
+php occ app:enable -n external
 
 APPDATA_DIR=$(find /var/www/html/data/ -type d -regex "/var/www/html/data/appdata[^/]*" | tr -d "\r" | head -n1)
 
@@ -39,28 +39,28 @@ echo "[HABIDAT] Theming..."
 mkdir -p "$APPDATA_DIR/theming/images"
 cp /images/logo "$APPDATA_DIR/theming/images"
 cp /images/background "$APPDATA_DIR/theming/images"
-php occ config:app:set theming color --value="#A40023"
-php occ config:app:set theming name --value="$HABIDAT_TITLE"
-php occ config:app:set theming url --value="$HABIDAT_PROTOCOL://$HABIDAT_DOMAIN"
-php occ config:app:set theming slogan --value="$HABIDAT_DESCRIPTION"
-php occ config:app:set theming backgroudMime --value="image/jpeg"
-php occ config:app:set theming logoMime --value="image/png"
-php occ maintenance:theme:update
+php occ config:app:set -n theming color --value="#A40023"
+php occ config:app:set -n theming name --value="$HABIDAT_TITLE"
+php occ config:app:set -n theming url --value="$HABIDAT_PROTOCOL://$HABIDAT_DOMAIN"
+php occ config:app:set -n theming slogan --value="$HABIDAT_DESCRIPTION"
+php occ config:app:set -n theming backgroudMime --value="image/jpeg"
+php occ config:app:set -n theming logoMime --value="image/png"
+php occ maintenance:theme:update -n
 
 #install and configre antivirus
 echo "[HABIDAT] Setting up antivirus..."
-php occ app:install files_antivirus
-php occ app:enable files_antivirus
-php occ config:app:set files_antivirus av_mode --value="daemon"
-php occ config:app:set files_antivirus av_host --value="$HABIDAT_DOCKER_PREFIX-nextcloud-antivirus"
-php occ config:app:set files_antivirus av_infected_action --value="only_log"
-php occ config:app:set files_antivirus av_port --value="3310"
+php occ app:install -n files_antivirus
+php occ app:enable -n files_antivirus
+php occ config:app:set -n files_antivirus av_mode --value="daemon"
+php occ config:app:set -n files_antivirus av_host --value="$HABIDAT_DOCKER_PREFIX-nextcloud-antivirus"
+php occ config:app:set -n files_antivirus av_infected_action --value="only_log"
+php occ config:app:set -n files_antivirus av_port --value="3310"
 
 
-php occ app:install discoursesso
-php occ app:enable discoursesso
-php occ config:app:set discoursesso clientsecret --value="$HABIDAT_DISCOURSE_SSO_SECRET"
-php occ config:app:set discoursesso clienturl --value="$HABIDAT_PROTOCOL://$HABIDAT_DISCOURSE_SUBDOMAIN.$HABIDAT_DOMAIN"
+php occ app:install -n discoursesso
+php occ app:enable -n discoursesso
+php occ config:app:set -n discoursesso clientsecret --value="$HABIDAT_DISCOURSE_SSO_SECRET"
+php occ config:app:set -n discoursesso clienturl --value="$HABIDAT_PROTOCOL://$HABIDAT_DISCOURSE_SUBDOMAIN.$HABIDAT_DOMAIN"
 
 
 #install tasks
@@ -69,72 +69,72 @@ php occ config:app:set discoursesso clienturl --value="$HABIDAT_PROTOCOL://$HABI
 
 #setup ldap
 echo "[HABIDAT] Setting up LDAP..."
-php occ app:enable user_ldap
-php occ ldap:create-empty-config
-php occ ldap:set-config s01 ldapHost "$HABIDAT_DOCKER_PREFIX-ldap"
-php occ ldap:set-config s01 ldapPort 389
-php occ ldap:set-config s01 ldapLoginFilter "(&(objectclass=inetOrgPerson)(|(uid=%uid)(|(cn=%uid)(mail=%uid))))"
-php occ ldap:set-config s01 hasMemberOfFilterSupport 1
-php occ ldap:set-config s01 lastJpegPhotoLookup 0
-php occ ldap:set-config s01 ldapAgentName "cn=admin,$HABIDAT_LDAP_BASE"
-php occ ldap:set-config s01 ldapAgentPassword "$HABIDAT_LDAP_ADMIN_PASSWORD"
-php occ ldap:set-config s01 ldapBase "$HABIDAT_LDAP_BASE"
-php occ ldap:set-config s01 ldapBaseGroups "ou=groups,$HABIDAT_LDAP_BASE"
-php occ ldap:set-config s01 ldapBaseUsers "ou=users,$HABIDAT_LDAP_BASE"
-php occ ldap:set-config s01 ldapCacheTTL 120
-php occ ldap:set-config s01 ldapConfigurationActive 1
-php occ ldap:set-config s01 ldapEmailAttribute mail
-php occ ldap:set-config s01 ldapExperiencedAdmin 0
-php occ ldap:set-config s01 ldapExpertUUIDGroupAttr cn
-php occ ldap:set-config s01 ldapExpertUUIDUserAttr uid
-php occ ldap:set-config s01 ldapGidNumber gidNumber
-php occ ldap:set-config s01 ldapGroupDisplayName cn
-php occ ldap:set-config s01 ldapGroupFilter "(&(|(objectclass=groupOfNames)))"
-php occ ldap:set-config s01 ldapGroupFilterMode 0
-php occ ldap:set-config s01 ldapGroupFilterObjectclass "groupOfNames"
-php occ ldap:set-config s01 ldapGroupMemberAssocAttr member
-php occ ldap:set-config s01 ldapLoginFilterAttributes cn
-php occ ldap:set-config s01 ldapLoginFilterEmail 1
-php occ ldap:set-config s01 ldapLoginFilterMode 0
-php occ ldap:set-config s01 ldapLoginFilterUsername 1
-php occ ldap:set-config s01 ldapNestedGroups 0
-php occ ldap:set-config s01 ldapPagingSize 1000
-php occ ldap:set-config s01 ldapQuotaDefault 10GB
-php occ ldap:set-config s01 ldapTLS 0
-php occ ldap:set-config s01 ldapUserDisplayName cn
-php occ ldap:set-config s01 ldapUserFilter "(objectclass=inetOrgPerson)"
-php occ ldap:set-config s01 ldapUserFilterMode 0
-php occ ldap:set-config s01 ldapUserFilterObjectclass inetOrgPerson
-php occ ldap:set-config s01 ldapUuidGroupAttribute auto
-php occ ldap:set-config s01 ldapUuidUserAttribute auto
-php occ ldap:set-config s01 turnOffCertCheck 0
-php occ ldap:set-config s01 turnOnPasswordChange 0
-php occ ldap:set-config s01 useMemberOfToDetectMembership 0        
+php occ app:enable -n user_ldap
+php occ ldap:create-empty-config -n
+php occ ldap:set-config -n s01 ldapHost "$HABIDAT_DOCKER_PREFIX-ldap"
+php occ ldap:set-config -n s01 ldapPort 389
+php occ ldap:set-config -n s01 ldapLoginFilter "(&(objectclass=inetOrgPerson)(|(uid=%uid)(|(cn=%uid)(mail=%uid))))"
+php occ ldap:set-config -n s01 hasMemberOfFilterSupport 1
+php occ ldap:set-config -n s01 lastJpegPhotoLookup 0
+php occ ldap:set-config -n s01 ldapAgentName "cn=admin,$HABIDAT_LDAP_BASE"
+php occ ldap:set-config -n s01 ldapAgentPassword "$HABIDAT_LDAP_ADMIN_PASSWORD"
+php occ ldap:set-config -n s01 ldapBase "$HABIDAT_LDAP_BASE"
+php occ ldap:set-config -n s01 ldapBaseGroups "ou=groups,$HABIDAT_LDAP_BASE"
+php occ ldap:set-config -n s01 ldapBaseUsers "ou=users,$HABIDAT_LDAP_BASE"
+php occ ldap:set-config -n s01 ldapCacheTTL 120
+php occ ldap:set-config -n s01 ldapConfigurationActive 1
+php occ ldap:set-config -n s01 ldapEmailAttribute mail
+php occ ldap:set-config -n s01 ldapExperiencedAdmin 0
+php occ ldap:set-config -n s01 ldapExpertUUIDGroupAttr cn
+php occ ldap:set-config -n s01 ldapExpertUUIDUserAttr uid
+php occ ldap:set-config -n s01 ldapGidNumber gidNumber
+php occ ldap:set-config -n s01 ldapGroupDisplayName cn
+php occ ldap:set-config -n s01 ldapGroupFilter "(&(|(objectclass=groupOfNames)))"
+php occ ldap:set-config -n s01 ldapGroupFilterMode 0
+php occ ldap:set-config -n s01 ldapGroupFilterObjectclass "groupOfNames"
+php occ ldap:set-config -n s01 ldapGroupMemberAssocAttr member
+php occ ldap:set-config -n s01 ldapLoginFilterAttributes cn
+php occ ldap:set-config -n s01 ldapLoginFilterEmail 1
+php occ ldap:set-config -n s01 ldapLoginFilterMode 0
+php occ ldap:set-config -n s01 ldapLoginFilterUsername 1
+php occ ldap:set-config -n s01 ldapNestedGroups 0
+php occ ldap:set-config -n s01 ldapPagingSize 1000
+php occ ldap:set-config -n s01 ldapQuotaDefault 10GB
+php occ ldap:set-config -n s01 ldapTLS 0
+php occ ldap:set-config -n s01 ldapUserDisplayName cn
+php occ ldap:set-config -n s01 ldapUserFilter "(objectclass=inetOrgPerson)"
+php occ ldap:set-config -n s01 ldapUserFilterMode 0
+php occ ldap:set-config -n s01 ldapUserFilterObjectclass inetOrgPerson
+php occ ldap:set-config -n s01 ldapUuidGroupAttribute auto
+php occ ldap:set-config -n s01 ldapUuidUserAttribute auto
+php occ ldap:set-config -n s01 turnOffCertCheck 0
+php occ ldap:set-config -n s01 turnOnPasswordChange 0
+php occ ldap:set-config -n s01 useMemberOfToDetectMembership 0        
 
 if [ $HABIDAT_SSO == "true" ]
 then
 
-	php occ app:install user_saml
-	php occ app:enable user_saml
-	php occ config:app:set user_saml general-allow_multiple_user_back_ends --value=0
-	php occ config:app:set user_saml general-idp0_display_name --value="$HABIDAT_TITLE"
-	php occ config:app:set user_saml general-require_provisioned_account --value=1
-	php occ config:app:set user_saml general-uid_mapping --value=uid
-	php occ config:app:set user_saml idp-entityId --value="https://sso.$HABIDAT_DOMAIN"
-	php occ config:app:set user_saml idp-singleLogoutService.url --value="https://sso.$HABIDAT_DOMAIN/simplesaml/saml2/idp/SingleLogoutService.php"
-	php occ config:app:set user_saml idp-singleSignOnService.url --value="https://sso.$HABIDAT_DOMAIN/simplesaml/saml2/idp/SSOService.php"
-	php occ config:app:set user_saml idp-x509cert --value="$(echo $HABIDAT_SSO_CERTIFICATE | sed --expression='s/\\n/\n/g')"
-	php occ config:app:set user_saml saml-attribute-mapping-displayName_mapping --value=cn
-	php occ config:app:set user_saml saml-attribute-mapping-email_mapping --value=mail
-	php occ config:app:set user_saml saml-attribute-mapping-group_mapping --value=memberOf
-	php occ config:app:set user_saml saml-attribute-mapping-quota_mapping --value=description
-	php occ config:app:set user_saml type --value=saml
-	php occ config:app:set user_saml types --value=authentication
+	php occ app:install -n user_saml
+	php occ app:enable -n user_saml
+	php occ config:app:set -n user_saml general-allow_multiple_user_back_ends --value=0
+	php occ config:app:set -n user_saml general-idp0_display_name --value="$HABIDAT_TITLE"
+	php occ config:app:set -n user_saml general-require_provisioned_account --value=1
+	php occ config:app:set -n user_saml general-uid_mapping --value=uid
+	php occ config:app:set -n user_saml idp-entityId --value="https://sso.$HABIDAT_DOMAIN"
+	php occ config:app:set -n user_saml idp-singleLogoutService.url --value="https://sso.$HABIDAT_DOMAIN/simplesaml/saml2/idp/SingleLogoutService.php"
+	php occ config:app:set -n user_saml idp-singleSignOnService.url --value="https://sso.$HABIDAT_DOMAIN/simplesaml/saml2/idp/SSOService.php"
+	php occ config:app:set -n user_saml idp-x509cert --value="$(echo $HABIDAT_SSO_CERTIFICATE | sed --expression='s/\\n/\n/g')"
+	php occ config:app:set -n user_saml saml-attribute-mapping-displayName_mapping --value=cn
+	php occ config:app:set -n user_saml saml-attribute-mapping-email_mapping --value=mail
+	php occ config:app:set -n user_saml saml-attribute-mapping-group_mapping --value=memberOf
+	php occ config:app:set -n user_saml saml-attribute-mapping-quota_mapping --value=description
+	php occ config:app:set -n user_saml type --value=saml
+	php occ config:app:set -n user_saml types --value=authentication
 
 fi	
 
 # version specific for 15.0.4
-php occ maintenance:mode --on
+php occ maintenance:mode -n --on
 php occ db:convert-filecache-bigint --no-interaction
-php occ maintenance:mode --off
+php occ maintenance:mode -n --off
 
