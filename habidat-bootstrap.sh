@@ -130,7 +130,7 @@ then
 	php occ config:app:set -n user_saml saml-attribute-mapping-quota_mapping --value=description
 	php occ config:app:set -n user_saml type --value=saml
 	php occ config:app:set -n user_saml types --value=authentication
-
+	cp /fixes/SAMLController.php /var/www/html/custom_apps/user_saml/lib/Controller/SAMLController.php
 fi	
 
 # version specific for 15.0.4
