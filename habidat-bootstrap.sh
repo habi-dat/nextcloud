@@ -1,9 +1,6 @@
 #!/bin/bash
 set +x
 
-envsubst < /fixes/.htaccess > /var/www/html/.htaccess
-cp /fixes/LoginController.php /var/www/html/core/Controller/LoginController.php
-
 echo "[HABIDAT] Installing Nextcloud..."
 php occ maintenance:install -n --database "mysql" --database-host "$HABIDAT_DOCKER_PREFIX-nextcloud-db" --database-name "nextcloud"  --database-user "nextcloud" --database-pass "$HABIDAT_MYSQL_PASSWORD" --admin-user "$HABIDAT_ADMIN_USER" --admin-pass "$HABIDAT_ADMIN_PASSWORD"
 
@@ -130,7 +127,6 @@ then
 	php occ config:app:set -n user_saml saml-attribute-mapping-quota_mapping --value=description
 	php occ config:app:set -n user_saml type --value=saml
 	php occ config:app:set -n user_saml types --value=authentication
-	cp /fixes/SAMLController.php /var/www/html/custom_apps/user_saml/lib/Controller/SAMLController.php
 fi	
 
 # version specific for 15.0.4
