@@ -15,4 +15,4 @@ ADD habidat-fixes.sh /habidat-fixes.sh
 ADD habidat-afterupdate.sh /habidat-afterupdate.sh
 ADD habidat-add-externalsite.sh /habidat-add-externalsite.sh
 
-RUN chmod +x /habidat-bootstrap.sh && chmod +x /habidat-afterupdate.sh && chmod +x /habidat-update-externalsites.sh
+RUN chmod +x /habidat-bootstrap.sh && chmod +x /habidat-afterupdate.sh && chmod +x /habidat-add-externalsite.sh
