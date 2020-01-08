@@ -17,7 +17,7 @@ then
 elif [ "$1" == "mediawiki" ] && [ ! -z $HABIDAT_MEDIAWIKI_SUBDOMAIN ] 
 then
 	NEW_EXTERNAL_SITE+=$(printf "$EXTERNAL_SITES_TEMPLATE" "$INDEX" "wiki.png" "$INDEX" "Mediawiki" "$HABIDAT_PROTOCOL://$HABIDAT_MEDIAWIKI_SUBDOMAIN.$HABIDAT_DOMAIN")
-elif [ "$1" == "dokuwiki"] && [ ! -z "$HABIDAT_DOKUWIKI_SUBDOMAIN" ] 
+elif [ "$1" == "dokuwiki" ] && [ ! -z "$HABIDAT_DOKUWIKI_SUBDOMAIN" ] 
 then
 	NEW_EXTERNAL_SITE+=$(printf "$EXTERNAL_SITES_TEMPLATE" "$INDEX" "wiki.png" "$INDEX" "Dokuwiki" "$HABIDAT_PROTOCOL://$HABIDAT_DOKUWIKI_SUBDOMAIN.$HABIDAT_DOMAIN")
 elif [ "$1" == "user" ] && [ ! -z "$HABIDAT_DOKUWIKI_SUBDOMAIN" ] 
