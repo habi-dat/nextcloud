@@ -82,6 +82,7 @@ php occ ldap:set-config -n s01 ldapCacheTTL 120
 php occ ldap:set-config -n s01 ldapConfigurationActive 1
 php occ ldap:set-config -n s01 ldapEmailAttribute mail
 php occ ldap:set-config -n s01 ldapExperiencedAdmin 0
+php occ ldap:set-config -n s01 ldapExpertUsernameAttr uid
 php occ ldap:set-config -n s01 ldapExpertUUIDGroupAttr cn
 php occ ldap:set-config -n s01 ldapExpertUUIDUserAttr uid
 php occ ldap:set-config -n s01 ldapGidNumber gidNumber
