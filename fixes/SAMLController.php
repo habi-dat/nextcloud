@@ -355,9 +355,10 @@ class SAMLController extends Controller {
 				$nameId = $this->session->get('user_saml.samlNameId');
 				$sessionIndex = $this->session->get('user_saml.samlSessionIndex');
 				if (!empty($_GET['returnTo'])) {
-					$returnTo = $_GET['returnTo'];
+					$targetUrl = $auth->logout($_GET['returnTo'], [], $nameId, $sessionIndex, $stay);
+				} else {
+					$targetUrl = $auth->logout(null, [], $nameId, $sessionIndex, $stay);
 				}
-				$targetUrl = $auth->logout($returnTo, [], $nameId, $sessionIndex, $stay);
 			}
 			if(!empty($targetUrl) && !$auth->getLastErrorReason()){
 				$this->userSession->logout();
