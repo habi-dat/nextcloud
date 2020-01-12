@@ -10,6 +10,7 @@ sed -i "/);/i \
 #install and configure nextcloud
 echo "[HABIDAT] Configuring Nextcloud..."
 php occ config:system:set -n trusted_domains 2 --value="$HABIDAT_NEXTCLOUD_SUBDOMAIN.$HABIDAT_DOMAIN"
+php occ config:system:set -n trusted_domains 3 --value="$HABIDAT_DOCKER_PREFIX-nextcloud"
 php occ config:system:set -n default_language --value=de
 php occ config:system:set -n force_language --value=de
 php occ config:system:set -n lost_password_link --value="$HABIDAT_PROTOCOL://$HABIDAT_USER_SUBDOMAIN.$HABIDAT_DOMAIN/lostpasswd"
