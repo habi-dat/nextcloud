@@ -2,6 +2,7 @@
 set +x
 
 EXTERNAL_SITES_TEMPLATE='{"%s":{"icon":"%s","lang":"","type":"link","device":"","id":"%s","name":"%s","url":"%s"}}'
+EXTERNAL_SITES_TEMPLATE_REDIRECT='{"%s":{"icon":"%s","lang":"","type":"link","device":"","id":"%s","name":"%s","url":"%s", "redirect":true}}'
 EXTERNAL_SITES=$(php occ config:app:get external sites)
 echo $EXTERNAL_SITES
 NEW_EXTERNAL_SITE=""
@@ -13,7 +14,7 @@ INDEX=$(echo $EXTERNAL_SITES | jq 'keys | length + 1')
 
 if [ "$1" == "discourse" ] && [ ! -z $HABIDAT_DISCOURSE_SUBDOMAIN ]
 then
-	NEW_EXTERNAL_SITE=$(printf "$EXTERNAL_SITES_TEMPLATE" "$INDEX" "discourse.ico" "$INDEX" "Discourse" "$HABIDAT_PROTOCOL://$HABIDAT_DISCOURSE_SUBDOMAIN.$HABIDAT_DOMAIN")
+	NEW_EXTERNAL_SITE=$(printf "$EXTERNAL_SITES_TEMPLATE_REDIRECT" "$INDEX" "discourse.ico" "$INDEX" "Discourse" "$HABIDAT_PROTOCOL://$HABIDAT_DISCOURSE_SUBDOMAIN.$HABIDAT_DOMAIN")
 elif [ "$1" == "mediawiki" ] && [ ! -z $HABIDAT_MEDIAWIKI_SUBDOMAIN ] 
 then
 	NEW_EXTERNAL_SITE+=$(printf "$EXTERNAL_SITES_TEMPLATE" "$INDEX" "wiki.png" "$INDEX" "Mediawiki" "$HABIDAT_PROTOCOL://$HABIDAT_MEDIAWIKI_SUBDOMAIN.$HABIDAT_DOMAIN")
