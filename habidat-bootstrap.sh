@@ -80,6 +80,7 @@ php occ ldap:set-config -n s01 ldapBaseUsers "ou=users,$HABIDAT_LDAP_BASE"
 php occ ldap:set-config -n s01 ldapCacheTTL 120
 php occ ldap:set-config -n s01 ldapConfigurationActive 1
 php occ ldap:set-config -n s01 ldapEmailAttribute mail
+php occ ldap:set-config -n s01 ldapQuotaAttribute description
 php occ ldap:set-config -n s01 ldapExperiencedAdmin 0
 php occ ldap:set-config -n s01 ldapExpertUsernameAttr uid
 php occ ldap:set-config -n s01 ldapExpertUUIDGroupAttr cn
