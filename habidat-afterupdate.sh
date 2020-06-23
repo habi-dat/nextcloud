@@ -1,6 +1,8 @@
 #!/bin/bash
 set +x
 
+php occ upgrade
+
 #install and configure nextcloud
 echo "[HABIDAT] Configuring Nextcloud..."
 php occ config:system:set -n trusted_domains 2 --value="$HABIDAT_NEXTCLOUD_SUBDOMAIN.$HABIDAT_DOMAIN"
@@ -13,8 +15,6 @@ php occ config:app:set -n discoursesso clienturl --value="$HABIDAT_PROTOCOL://$H
 
 #setup ldap
 echo "[HABIDAT] Setting up LDAP..."
-php occ app:enable -n user_ldap
-php occ ldap:create-empty-config -n
 php occ ldap:set-config -n s01 ldapHost "$HABIDAT_DOCKER_PREFIX-ldap"
 php occ ldap:set-config -n s01 ldapPort 389
 php occ ldap:set-config -n s01 ldapLoginFilter "(&(objectclass=inetOrgPerson)(|(uid=%uid)(|(cn=%uid)(mail=%uid))))"
