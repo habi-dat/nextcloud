@@ -70,6 +70,7 @@ php occ ldap:create-empty-config -n
 php occ ldap:set-config -n s01 ldapHost "$HABIDAT_DOCKER_PREFIX-ldap"
 php occ ldap:set-config -n s01 ldapPort 389
 php occ ldap:set-config -n s01 ldapLoginFilter "(&(objectclass=inetOrgPerson)(|(uid=%uid)(|(cn=%uid)(mail=%uid))))"
+php occ ldap:set-config -n s01 ldapAttributesForUserSearch "uid;cn"
 php occ ldap:set-config -n s01 hasMemberOfFilterSupport 1
 php occ ldap:set-config -n s01 lastJpegPhotoLookup 0
 php occ ldap:set-config -n s01 ldapAgentName "cn=admin,$HABIDAT_LDAP_BASE"
