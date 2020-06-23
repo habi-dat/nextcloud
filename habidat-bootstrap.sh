@@ -100,6 +100,7 @@ php occ ldap:set-config -n s01 ldapPagingSize 1000
 php occ ldap:set-config -n s01 ldapQuotaDefault 10GB
 php occ ldap:set-config -n s01 ldapTLS 0
 php occ ldap:set-config -n s01 ldapUserDisplayName cn
+php occ ldap:set-config -n s01 ldapUserDisplayName2 title
 php occ ldap:set-config -n s01 ldapUserFilter "(objectclass=inetOrgPerson)"
 php occ ldap:set-config -n s01 ldapUserFilterMode 0
 php occ ldap:set-config -n s01 ldapUserFilterObjectclass inetOrgPerson
