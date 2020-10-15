@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /**
@@ -41,19 +42,20 @@ class MailAccountMapper extends QBMapper {
 		parent::__construct($db, 'mail_accounts');
 	}
 
-   private function getUserClause($qb, $userId) {
-            $userObject = \OC::$server->getUserManager()->get($userId);
-            $groups = [];
-            if ($userObject) {
-                    $groups = \OC::$server->getGroupManager()->getUserGroupIds($userObject);
-            }
-            $or = $qb->expr()->orx();
-            $or->add($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)));
-            $andx = $qb->expr()->andx();
-            $andx->add($qb->expr()->in($qb->func()->substring('user_id', $qb->expr()->literal(8)), $qb->createNamedParameter($groups, IQueryBuilder::PARAM_STR_ARRAY)));
-            $andx->add($qb->expr()->eq($qb->func()->substring('user_id', $qb->expr()->literal(1),  $qb->expr()->literal(7)), $qb->expr()->literal("[GROUP]")));
-            $or->add($andx);
-            return $or;
+
+	private function getUserClause($qb, $userId) {
+		$userObject = \OC::$server->getUserManager()->get($userId);
+		$groups = [];
+		if ($userObject) {
+			$groups = \OC::$server->getGroupManager()->getUserGroupIds($userObject);
+		}
+		$or = $qb->expr()->orx();
+		$or->add($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)));
+		$andx = $qb->expr()->andx();
+		$andx->add($qb->expr()->in($qb->func()->substring('user_id', $qb->expr()->literal(8)), $qb->createNamedParameter($groups, IQueryBuilder::PARAM_STR_ARRAY)));
+		$andx->add($qb->expr()->eq($qb->func()->substring('user_id', $qb->expr()->literal(1),  $qb->expr()->literal(7)), $qb->expr()->literal("[GROUP]")));
+		$or->add($andx);
+		return $or;
     }
 
 	/** Finds an Mail Account by id
@@ -62,6 +64,8 @@ class MailAccountMapper extends QBMapper {
 	 * @param int $accountId
 	 *
 	 * @return MailAccount
+	 *
+	 * @throws DoesNotExistException
 	 */
 	public function find(string $userId, int $accountId): MailAccount {
 		$qb = $this->db->getQueryBuilder();
@@ -102,7 +106,7 @@ class MailAccountMapper extends QBMapper {
 		$query = $qb
 			->select('*')
 			->from($this->getTableName())
-            ->where($this->getUserClause($qb, $userId));			
+            ->where($this->getUserClause($qb, $userId));	
 
 		return $this->findEntities($query);
 	}
@@ -149,7 +153,7 @@ class MailAccountMapper extends QBMapper {
 		$delete->execute();
 	}
 
-	public function getAllAccounts(): array  {
+	public function getAllAccounts(): array {
 		$qb = $this->db->getQueryBuilder();
 		$query = $qb
 			->select('*')
@@ -157,5 +161,4 @@ class MailAccountMapper extends QBMapper {
 
 		return $this->findEntities($query);
 	}
-
 }
