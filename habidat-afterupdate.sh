@@ -88,7 +88,7 @@ php occ maintenance:mode -n --off
 
 
 
-cp /fixes/LoginController.php /var/www/html/core/Controller/LoginController.php
+#cp /fixes/LoginController.php /var/www/html/core/Controller/LoginController.php
 
 if [ $HABIDAT_SSO == "true" ]
 then

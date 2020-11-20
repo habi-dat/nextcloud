@@ -23,6 +23,8 @@
 namespace OCA\User_SAML\Controller;
 
 use Firebase\JWT\JWT;
+use OC\Core\Controller\ClientFlowLoginController;
+use OC\Core\Controller\ClientFlowLoginV2Controller;
 use OCA\User_SAML\Exceptions\NoUserFoundException;
 use OCA\User_SAML\SAMLSettings;
 use OCA\User_SAML\UserBackend;
@@ -37,6 +39,7 @@ use OCP\IURLGenerator;
 use OCP\IUser;
 use OCP\IUserManager;
 use OCP\IUserSession;
+use OCP\Security\ICrypto;
 use OneLogin\Saml2\Auth;
 use OneLogin\Saml2\Error;
 use OneLogin\Saml2\Settings;
@@ -61,6 +64,10 @@ class SAMLController extends Controller {
 	private $logger;
 	/** @var IL10N */
 	private $l;
+	/**
+	 * @var ICrypto
+	 */
+	private $crypto;
 
 	/**
 	 * @param string $appName
@@ -85,7 +92,8 @@ class SAMLController extends Controller {
 								IURLGenerator $urlGenerator,
 								IUserManager $userManager,
 								ILogger $logger,
-								IL10N $l) {
+								IL10N $l,
+								ICrypto $crypto) {
 		parent::__construct($appName, $request);
 		$this->session = $session;
 		$this->userSession = $userSession;
@@ -96,6 +104,7 @@ class SAMLController extends Controller {
 		$this->userManager = $userManager;
 		$this->logger = $logger;
 		$this->l = $l;
+		$this->crypto = $crypto;
 	}
 
 	/**
@@ -118,6 +127,8 @@ class SAMLController extends Controller {
 				$this->logger->error('Uid "' . $uid . '" is not a valid uid please check your attribute mapping', ['app' => $this->appName]);
 				throw new \InvalidArgumentException('No valid uid given, please check your attribute mapping. Given uid: ' . $uid);
 			}
+
+			$uid = $this->userBackend->testEncodedObjectGUID($uid);
 
 			// if this server acts as a global scale master and the user is not
 			// a local admin of the server we just create the user and continue
@@ -161,6 +172,7 @@ class SAMLController extends Controller {
 	 * @PublicPage
 	 * @UseSession
 	 * @OnlyUnauthenticatedUsers
+	 * @NoCSRFRequired
 	 *
 	 * @param int $idp id of the idp
 	 * @return Http\RedirectResponse
@@ -172,9 +184,35 @@ class SAMLController extends Controller {
 			case 'saml':
 				$auth = new Auth($this->SAMLSettings->getOneLoginSettingsArray($idp));
 				$ssoUrl = $auth->login(null, [], false, false, true);
-				$this->session->set('user_saml.AuthNRequestID', $auth->getLastRequestID());
-				$this->session->set('user_saml.OriginalUrl', $this->request->getParam('originalUrl', ''));
-				$this->session->set('user_saml.Idp', $idp);
+				$response = new Http\RedirectResponse($ssoUrl);
+
+				// Small hack to make user_saml work with the loginflows
+				$flowData = [];
+
+				if ($this->session->get('client.flow.state.token') !== null) {
+					$flowData['cf1'] = $this->session->get('client.flow.state.token');
+				} else if ($this->session->get('client.flow.v2.login.token') !== null) {
+					$flowData['cf2'] = [
+						'name' => $this->session->get('client.flow.v2.login.token'),
+						'state' => $this->session->get('client.flow.v2.state.token'),
+					];
+				}
+
+				// Pack data as JSON so we can properly extract it later
+				$data = json_encode([
+					'AuthNRequestID' => $auth->getLastRequestID(),
+					'OriginalUrl' => $this->request->getParam('originalUrl', ''),
+					'Idp' => $idp,
+					'flow' => $flowData,
+				]);
+
+				// Encrypt it
+				$data = $this->crypto->encrypt($data);
+
+				// And base64 encode it
+				$data = base64_encode($data);
+
+				$response->addCookie('saml_data', $data, null, 'None');
 				break;
 			case 'environment-variable':
 				$ssoUrl = $this->request->getParam('originalUrl', '');
@@ -195,6 +233,7 @@ class SAMLController extends Controller {
 					}
 					$ssoUrl = $this->urlGenerator->linkToRouteAbsolute('user_saml.SAML.notProvisioned');
 				}
+				$response = new Http\RedirectResponse($ssoUrl);
 				break;
 			default:
 				throw new \Exception(
@@ -205,7 +244,7 @@ class SAMLController extends Controller {
 				);
 		}
 
-		return new Http\RedirectResponse($ssoUrl);
+		return $response;
 	}
 
 	/**
@@ -236,15 +275,45 @@ class SAMLController extends Controller {
 	 * @OnlyUnauthenticatedUsers
 	 * @NoSameSiteCookieRequired
 	 *
-	 * @return Http\RedirectResponse|void
+	 * @return Http\RedirectResponse
 	 * @throws Error
 	 * @throws ValidationError
 	 */
-	public function assertionConsumerService() {
-		$AuthNRequestID = $this->session->get('user_saml.AuthNRequestID');
-		$idp = $this->session->get('user_saml.Idp');
+	public function assertionConsumerService(): Http\RedirectResponse {
+		// Fetch and decrypt the cookie
+		$cookie = $this->request->getCookie('saml_data');
+		if ($cookie === null) {
+			$this->logger->debug('Cookie was not present', ['app' => 'user_saml']);
+			return new Http\RedirectResponse($this->urlGenerator->getAbsoluteURL('/'));
+		}
+
+		// Base64 decode
+		$cookie = base64_decode($cookie);
+
+		// Decrypt and deserialize
+		try {
+			$cookie = $this->crypto->decrypt($cookie);
+		} catch (\Exception $e) {
+			$this->logger->debug('Could not decrypt SAML cookie', ['app' => 'user_saml']);
+			return new Http\RedirectResponse($this->urlGenerator->getAbsoluteURL('/'));
+		}
+		$data = json_decode($cookie, true);
+
+		if (isset($data['flow'])) {
+			if (isset($data['flow']['cf1'])) {
+				$this->session->set('client.flow.state.token', $data['flow']['cf1']);
+			} else if (isset($data['flow']['cf2'])) {
+				$this->session->set('client.flow.v2.login.token', $data['flow']['cf2']['token']);
+				$this->session->set('client.flow.v2.state.token', $data['flow']['cf2']['state']);
+			}
+
+		}
+
+		$AuthNRequestID = $data['AuthNRequestID'];
+		$idp = $data['Idp'];
 		if(is_null($AuthNRequestID) || $AuthNRequestID === '' || is_null($idp)) {
-			return;
+			$this->logger->debug('Invalid auth payload', ['app' => 'user_saml']);
+			return new Http\RedirectResponse($this->urlGenerator->getAbsoluteURL('/'));
 		}
 
 		$auth = new Auth($this->SAMLSettings->getOneLoginSettingsArray($idp));
@@ -263,7 +332,9 @@ class SAMLController extends Controller {
 
 		if (!$auth->isAuthenticated()) {
 			$this->logger->info('Auth failed', ['app' => $this->appName]);
-			return new Http\RedirectResponse($this->urlGenerator->linkToRouteAbsolute('user_saml.SAML.notProvisioned'));
+			$response = new Http\RedirectResponse($this->urlGenerator->linkToRouteAbsolute('user_saml.SAML.notProvisioned'));
+			$response->invalidateCookie('saml_data');
+			return $response;
 		}
 
 		// Check whether the user actually exists, if not redirect to an error page
@@ -272,11 +343,16 @@ class SAMLController extends Controller {
 			$this->autoprovisionIfPossible($auth->getAttributes());
 		} catch (NoUserFoundException $e) {
 			$this->logger->error($e->getMessage(), ['app' => $this->appName]);
-			return new Http\RedirectResponse($this->urlGenerator->linkToRouteAbsolute('user_saml.SAML.notProvisioned'));
+			$response = new Http\RedirectResponse($this->urlGenerator->linkToRouteAbsolute('user_saml.SAML.notProvisioned'));
+			$response->invalidateCookie('saml_data');
+			return $response;
 		}
 
 		$this->session->set('user_saml.samlUserData', $auth->getAttributes());
 		$this->session->set('user_saml.samlNameId', $auth->getNameId());
+		$this->session->set('user_saml.samlNameIdFormat', $auth->getNameIdFormat());
+		$this->session->set('user_saml.samlNameIdNameQualifier', $auth->getNameIdNameQualifier());
+		$this->session->set('user_saml.samlNameIdSPNameQualifier', $auth->getNameIdSPNameQualifier());
 		$this->session->set('user_saml.samlSessionIndex', $auth->getSessionIndex());
 		$this->session->set('user_saml.samlSessionExpiration', $auth->getSessionExpiration());
 		try {
@@ -290,21 +366,24 @@ class SAMLController extends Controller {
 			}
 		} catch (\Exception $e) {
 			$this->logger->logException($e, ['app' => $this->appName]);
-			return new Http\RedirectResponse($this->urlGenerator->linkToRouteAbsolute('user_saml.SAML.notProvisioned'));
+			$response = new Http\RedirectResponse($this->urlGenerator->linkToRouteAbsolute('user_saml.SAML.notProvisioned'));
+			$response->invalidateCookie('saml_data');
+			return $response;
 		}
 
-		$originalUrl = $this->session->get('user_saml.OriginalUrl');
+		$originalUrl = $data['OriginalUrl'];
 		if($originalUrl !== null && $originalUrl !== '') {
 			$response = new Http\RedirectResponse($originalUrl);
 		} else {
 			$response = new Http\RedirectResponse(\OC::$server->getURLGenerator()->getAbsoluteURL('/'));
 		}
-		$this->session->remove('user_saml.OriginalUrl');
 		// The Nextcloud desktop client expects a cookie with the key of "_shibsession"
 		// to be there.
 		if($this->request->isUserAgent(['/^.*(mirall|csyncoC)\/.*$/'])) {
 			$response->addCookie('_shibsession_', 'authenticated');
 		}
+
+		$response->invalidateCookie('saml_data');
 		return $response;
 	}
 
@@ -353,11 +432,15 @@ class SAMLController extends Controller {
 				// If request is not from IDP, we must send him the logout request
 				$parameters = array();
 				$nameId = $this->session->get('user_saml.samlNameId');
+				$nameIdFormat = $this->session->get('user_saml.samlNameIdFormat');
+				$nameIdNameQualifier = $this->session->get('user_saml.samlNameIdNameQualifier');
+				$nameIdSPNameQualifier = $this->session->get('user_saml.samlNameIdSPNameQualifier');
 				$sessionIndex = $this->session->get('user_saml.samlSessionIndex');
-				if (!empty($_GET['returnTo'])) {
-					$targetUrl = $auth->logout($_GET['returnTo'], [], $nameId, $sessionIndex, $stay);
-				} else {
-					$targetUrl = $auth->logout(null, [], $nameId, $sessionIndex, $stay);
+				try {
+					$targetUrl = $auth->logout(null, [], $nameId, $sessionIndex, $stay, $nameIdFormat, $nameIdNameQualifier, $nameIdSPNameQualifier);
+				} catch (Error $e) {
+					$this->logger->logException($e, ['level' => ILogger::WARN]);
+					$this->userSession->logout();
 				}
 			}
 			if(!empty($targetUrl) && !$auth->getLastErrorReason()){
@@ -365,11 +448,11 @@ class SAMLController extends Controller {
 			}
 		}
 		if(empty($targetUrl)){
-			if (!empty($_GET['RelayState'])) {
-				$targetUrl = $_GET['RelayState'];
-			} else {
-				$targetUrl = $this->urlGenerator->getAbsoluteURL('/');
-			}
+            if (!empty($_GET['RelayState'])) {
+                $targetUrl = $_GET['RelayState'];
+            } else {
+                $targetUrl = $this->urlGenerator->getAbsoluteURL('/');
+            }
 		}
 
 		return new Http\RedirectResponse($targetUrl);
