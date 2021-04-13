@@ -33,6 +33,9 @@ use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\IDBConnection;
 use OCP\IUser;
 
+/**
+ * @template-extends QBMapper<MailAccount>
+ */
 class MailAccountMapper extends QBMapper {
 
 	/**
@@ -41,7 +44,6 @@ class MailAccountMapper extends QBMapper {
 	public function __construct(IDBConnection $db) {
 		parent::__construct($db, 'mail_accounts');
 	}
-
 
 	private function getUserClause($qb, $userId) {
 		$userObject = \OC::$server->getUserManager()->get($userId);
@@ -57,7 +59,6 @@ class MailAccountMapper extends QBMapper {
 		$or->add($andx);
 		return $or;
     }
-
 	/** Finds an Mail Account by id
 	 *
 	 * @param string $userId
@@ -106,7 +107,7 @@ class MailAccountMapper extends QBMapper {
 		$query = $qb
 			->select('*')
 			->from($this->getTableName())
-            ->where($this->getUserClause($qb, $userId));	
+			->where($this->getUserClause($qb, $userId));
 
 		return $this->findEntities($query);
 	}
@@ -157,6 +158,15 @@ class MailAccountMapper extends QBMapper {
 		$qb = $this->db->getQueryBuilder();
 		$query = $qb
 			->select('*')
+			->from($this->getTableName());
+
+		return $this->findEntities($query);
+	}
+
+	public function getAllUserIdsWithAccounts(): array {
+		$qb = $this->db->getQueryBuilder();
+		$query = $qb
+			->selectDistinct('user_id')
 			->from($this->getTableName());
 
 		return $this->findEntities($query);
