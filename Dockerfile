@@ -1,4 +1,4 @@
-FROM nextcloud:21
+FROM nextcloud:21.0.2
 
 RUN \
   apt-get update \
