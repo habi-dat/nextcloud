@@ -7,7 +7,7 @@ RUN \
 && rm -rf /var/lib/apt/lists/*
 
 ADD fixes /fixes
-
+ 
 ADD images /images
 ADD icons /icons
 ADD habidat-bootstrap.sh /habidat-bootstrap.sh

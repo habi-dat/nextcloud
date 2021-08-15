@@ -66,7 +66,7 @@ then
 	php occ app:enable -n user_saml
 	php occ config:app:set -n user_saml general-allow_multiple_user_back_ends --value=0
 	php occ config:app:set -n user_saml general-idp0_display_name --value="$HABIDAT_TITLE"
-	php occ config:app:set -n user_saml general-require_provisioned_account --value=0
+	php occ config:app:set -n user_saml general-require_provisioned_account --value=1
 	php occ config:app:set -n user_saml general-uid_mapping --value=uid
 	php occ config:app:set -n user_saml idp-entityId --value="https://sso.$HABIDAT_DOMAIN"
 	php occ config:app:set -n user_saml idp-singleLogoutService.url --value="https://sso.$HABIDAT_DOMAIN/simplesaml/saml2/idp/SingleLogoutService.php"
