@@ -96,7 +96,7 @@ php occ ldap:set-config -n s01 ldapLoginFilterAttributes cn
 php occ ldap:set-config -n s01 ldapLoginFilterEmail 1
 php occ ldap:set-config -n s01 ldapLoginFilterMode 0
 php occ ldap:set-config -n s01 ldapLoginFilterUsername 1
-php occ ldap:set-config -n s01 ldapNestedGroups 0
+php occ ldap:set-config -n s01 ldapNestedGroups 1
 php occ ldap:set-config -n s01 ldapPagingSize 1000
 php occ ldap:set-config -n s01 ldapQuotaDefault 10GB
 php occ ldap:set-config -n s01 ldapTLS 0
