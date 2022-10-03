@@ -121,8 +121,8 @@ then
 	php occ config:app:set -n user_saml general-require_provisioned_account --value=1
 	php occ config:app:set -n user_saml general-uid_mapping --value=uid
 	php occ config:app:set -n user_saml idp-entityId --value="https://sso.$HABIDAT_DOMAIN"
-	php occ config:app:set -n user_saml idp-singleLogoutService.url --value="https://sso.$HABIDAT_DOMAIN/simplesaml/saml2/idp/SingleLogoutService.php"
-	php occ config:app:set -n user_saml idp-singleSignOnService.url --value="https://sso.$HABIDAT_DOMAIN/simplesaml/saml2/idp/SSOService.php"
+	php occ config:app:set -n user_saml idp-singleLogoutService.url --value="https://user.$HABIDAT_DOMAIN/sso/login/nextcloud"
+	php occ config:app:set -n user_saml idp-singleSignOnService.url --value="https://user.$HABIDAT_DOMAIN/sso/logout/nextcloud"
 	php occ config:app:set -n user_saml idp-x509cert --value="$(echo $HABIDAT_SSO_CERTIFICATE | sed --expression='s/\\n/\n/g')"
 	php occ config:app:set -n user_saml saml-attribute-mapping-displayName_mapping --value=cn
 	php occ config:app:set -n user_saml saml-attribute-mapping-email_mapping --value=mail
