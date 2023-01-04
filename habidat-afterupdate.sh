@@ -64,20 +64,20 @@ then
 
 	php occ app:install -n user_saml
 	php occ app:enable -n user_saml
-	php occ config:app:set -n user_saml general-allow_multiple_user_back_ends --value=0
-	php occ config:app:set -n user_saml general-idp0_display_name --value="$HABIDAT_TITLE"
-	php occ config:app:set -n user_saml general-require_provisioned_account --value=1
-	php occ config:app:set -n user_saml general-uid_mapping --value=uid
-	php occ config:app:set -n user_saml idp-entityId --value="https://sso.$HABIDAT_DOMAIN"
-	php occ config:app:set -n user_saml idp-singleLogoutService.url --value="https://user.$HABIDAT_DOMAIN/sso/login/nextcloud"
-	php occ config:app:set -n user_saml idp-singleSignOnService.url --value="https://user.$HABIDAT_DOMAIN/sso/logout/nextcloud"
-	php occ config:app:set -n user_saml idp-x509cert --value="$(echo $HABIDAT_SSO_CERTIFICATE | sed --expression='s/\\n/\n/g')"
-	php occ config:app:set -n user_saml saml-attribute-mapping-displayName_mapping --value=cn
-	php occ config:app:set -n user_saml saml-attribute-mapping-email_mapping --value=mail
-	php occ config:app:set -n user_saml saml-attribute-mapping-group_mapping --value=memberOf
-	php occ config:app:set -n user_saml saml-attribute-mapping-quota_mapping --value=description
-	php occ config:app:set -n user_saml type --value=saml
-	php occ config:app:set -n user_saml types --value=authentication
+  php occ config:app:set -n user_saml general-allow_multiple_user_back_ends --value=0
+  php occ config:app:set -n user_saml general-require_provisioned_account --value=1
+  php occ config:app:set -n user_saml type --value=saml
+  php occ config:app:set -n user_saml types --value=authentication
+
+  php occ saml:config:set -n 1 --general-idp0_display_name="$HABIDAT_TITLE"
+  php occ saml:config:set -n 1 --general-uid_mapping=uid
+  php occ saml:config:set -n 1 --idp-entityId="https://user.$HABIDAT_DOMAIN"
+  php occ saml:config:set -n 1 --idp-singleLogoutService.url="https://user.$HABIDAT_DOMAIN/sso/logout/nextcloud"
+  php occ saml:config:set -n 1 --idp-singleSignOnService.url="https://user.$HABIDAT_DOMAIN/sso/login/nextcloud"
+  php occ saml:config:set -n 1 --idp-x509cert="$(echo $HABIDAT_SSO_CERTIFICATE | sed --expression='s/\\n/\n/g')"
+  php occ saml:config:set -n 1 --saml-attribute-mapping-displayName_mapping=cn
+  php occ saml:config:set -n 1 --saml-attribute-mapping-email_mapping=mail
+  php occ saml:config:set -n 1 --saml-attribute-mapping-quota_mapping=description
 fi	
 
 # version specific for 15.0.4
