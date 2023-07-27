@@ -1,4 +1,4 @@
-FROM nextcloud:24.0.7
+FROM nextcloud:${NEXTCLOUD_VERSION}
 
 RUN \
   apt-get update \

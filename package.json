@@ -1,0 +1,15 @@
+{
+  "name": "habidat-nextcloud",
+  "version": "25.0.9",
+  "description": "Nextcloud image for habi*DAT",
+  "main": "index.js",
+  "repository": "https://github.com/habi-dat/nextcloud",
+  "author": "Florian Humer <florian.humer@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "build": "./build.sh",
+    "build:latest": "./build.sh latest",
+    "push": "./push.sh",
+    "push:latest": "./push.sh latest"
+  }
+}
