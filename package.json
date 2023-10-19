@@ -1,6 +1,6 @@
 {
   "name": "habidat-nextcloud",
-  "version": "25.0.9",
+  "version": "26.0.7",
   "description": "Nextcloud image for habi*DAT",
   "main": "index.js",
   "repository": "https://github.com/habi-dat/nextcloud",
