@@ -1,15 +1,15 @@
 ARG NEXTCLOUD_VERSION
 
-FROM nextcloud:${NEXTCLOUD_VERSION}
+FROM nextcloud:${NEXTCLOUD_VERSION:-latest}
 
 RUN \
   apt-get update \
   && apt-get -y install gettext-base jq \
   && apt-get clean \
-&& rm -rf /var/lib/apt/lists/*
+  && rm -rf /var/lib/apt/lists/*
 
 ADD fixes /fixes
- 
+
 ADD images /images
 ADD icons /icons
 ADD habidat-bootstrap.sh /habidat-bootstrap.sh
